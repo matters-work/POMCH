@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Current State × Transformative Potential — Product Operating Model (Oct 2025)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+  <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+  <style>
+    :root { --bg:#fff; --fg:#111; --muted:#666; }
+    html,body { margin:0; padding:0; background:var(--bg); color:var(--fg); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+    .wrap { max-width: 1280px; margin: 24px auto 8px; padding: 0 16px; }
+    h1 { font-size: 24px; margin: 0 0 6px; text-align:center; }
+    .sub { text-align:center; color:var(--muted); margin-bottom: 6px; font-size:14px; }
+    #chart { width:100%; height: 820px; }
+    .legend-note { text-align:center; color:#555; font-size:13px; margin-top:10px; }
+    @media (max-width: 768px) { #chart { height: 600px; } }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Current State × Transformative Potential (Principle-Level 2×2)</h1>
+  <div class="sub">Hover shows true averages. X = Current State, Y = Transformative Potential. Scale locked to 1–5.</div>
+</div>
+<div id="chart" role="img" aria-label="2×2 scatter showing each principle's current state vs. transformative potential"></div>
+<div class="legend-note">Quadrants split by medians. Colors: Opportunity (green), Strength (blue), Sustain (brown), Deprioritize (gray).</div>
+
+<script>
+
+const names = ["1a. Empowered teams with problems to solve", "1b. Focus", "1c. Minimize waste", "1d. Small, frequent, decoupled releases", "1e. Trust over control", "2a. Outcomes over Output", "2b. Powered by insights", "2c. Assess and mitigate product risks", "2d. Instrumentation", "2e. Innovation over predictability", "3a. Sense of Ownership", "3b. Transparency", "3c. Embrace rapid experimentation", "3d. Monitoring", "3e. Learning over \"failure\"", "4a. Collaboration", "4b. Placing bets", "4c. Test ideas responsibly", "4d. Deployment infrastructure", "4e. Outcomes over output", "5e. Principles over process"];
+const shortLabels = ["1a", "1b", "1c", "1d", "1e", "2a", "2b", "2c", "2d", "2e", "3a", "3b", "3c", "3d", "3e", "4a", "4b", "4c", "4d", "4e", "5e"];
+const xVals = [2.355, 2.8307, 2.8377, 4.3175, 2.6607, 2.8407, 2.5014, 2.8483, 2.8194, 1.6592, 2.5014, 3.4895, 1.6884, 3.1603, 3.3342, 2.8675, 2.1506, 2.6361, 2.8463, 2.6762, 2.4756];   // jittered for visibility
+const yVals = [4.5107, 3.9772, 3.4889, 1.8258, 4.1777, 4.0137, 4.1964, 3.4828, 3.3662, 4.0145, 4.1981, 3.8211, 4.0316, 3.3579, 3.4908, 4.6318, 3.1584, 2.9683, 3.7663, 3.6744, 3.4941];   // jittered for visibility
+const xTrue = [2.3333, 2.8333, 2.8333, 4.3333, 2.6667, 2.8333, 2.5, 2.8333, 2.8333, 1.6667, 2.5, 3.5, 1.6667, 3.1667, 3.3333, 2.8333, 2.1667, 2.6667, 2.8333, 2.6667, 2.5]; // true Current State
+const yTrue = [4.5, 4.0, 3.5, 1.8, 4.1667, 4.0, 4.1667, 3.5, 3.3333, 4.0, 4.1667, 3.8333, 4.0, 3.3333, 3.5, 4.6667, 3.1667, 3.0, 3.8, 3.6667, 3.5]; // true Transformative Potential
+const counts = [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6];
+
+
+// Medians computed from true values
+function median(arr) { const a=[...arr].sort((x,y)=>x-y); const m=Math.floor(a.length/2); return a.length%2 ? a[m] : (a[m-1]+a[m])/2; }
+const xMed = median(xTrue);   // Current State median (true)
+const yMed = median(yTrue);   // Transformative Potential median (true)
+
+const QUADS = {
+  OPP: "High Potential • Low Current (Opportunity)",
+  STR: "High Potential • High Current (Strength)",
+  SUS: "Low Potential • High Current (Sustain)",
+  DEP: "Low Potential • Low Current (Deprioritize)"
+};
+function classify(x,y){ 
+  if (y>=yMed && x<xMed) return QUADS.OPP;
+  if (y>=yMed && x>=xMed) return QUADS.STR;
+  if (y<yMed  && x>=xMed) return QUADS.SUS;
+  return QUADS.DEP;
+}
+
+const colors = {
+  [QUADS.OPP]:"#2E7D32",
+  [QUADS.STR]:"#1565C0",
+  [QUADS.SUS]:"#6D4C41",
+  [QUADS.DEP]:"#9E9E9E"
+};
+
+// Bucket with jittered coords but true stats in hover
+const byQ={};
+for (let i=0;i<names.length;i++) {
+  const q = classify(xTrue[i], yTrue[i]);
+  if (!byQ[q]) byQ[q] = {x:[], y:[], text:[], size:[], cd:[]};
+  byQ[q].x.push(xVals[i]);
+  byQ[q].y.push(yVals[i]);
+  byQ[q].text.push(shortLabels[i]);
+  byQ[q].size.push(Math.max(12, Math.min(32, counts[i]*3)));
+  byQ[q].cd.push([names[i], counts[i], xTrue[i], yTrue[i]]);
+}
+
+const traces = Object.keys(byQ).map(q => ({
+  type:"scatter",
+  mode:"markers+text",
+  x: byQ[q].x,
+  y: byQ[q].y,
+  text: byQ[q].text,
+  textposition: "top center",
+  textfont: { size: 13 },
+  marker: { size: byQ[q].size, color: colors[q], line: { width: 1, color: "white" }, opacity: 0.92 },
+  name: q,
+  customdata: byQ[q].cd,
+  hovertemplate: "<b>%{customdata[0]}</b><br>Current State (X): %{customdata[2]:.2f}<br>Transformative Potential (Y): %{customdata[3]:.2f}<br>Responses: %{customdata[1]:.0f}<extra></extra>"
+}));
+
+// Fixed 1–5 ranges
+const x0 = 1, x1 = 5, y0 = 1, y1 = 5;
+
+// Background quadrants + median lines
+const shapes = [
+  {type:"rect", x0:x0,  y0:yMed, x1:xMed, y1:y1, fillcolor:"#C8E6C9", opacity:0.45, line:{width:0}},
+  {type:"rect", x0:xMed, y0:yMed, x1:x1,  y1:y1, fillcolor:"#BBDEFB", opacity:0.36, line:{width:0}},
+  {type:"rect", x0:xMed, y0:y0,  x1:x1,  y1:yMed, fillcolor:"#D7CCC8", opacity:0.28, line:{width:0}},
+  {type:"rect", x0:x0,  y0:y0,  x1:xMed, y1:yMed, fillcolor:"#EEEEEE", opacity:0.50, line:{width:0}},
+  {type:"line", x0:xMed, x1:xMed, y0:y0, y1:y1, line:{width:2, dash:"dash", color:"#455A64"}},
+  {type:"line", x0:x0,  x1:x1,  y0:yMed, y1:yMed, line:{width:2, dash:"dash", color:"#455A64"}},
+];
+
+const annotations = [
+  {x:(x0+xMed)/2, y:(yMed+y1)*0.98, text:"Opportunity",  showarrow:false, font:{size:16, color:"#1B5E20"}},
+  {x:(xMed+x1)/2, y:(yMed+y1)*0.98, text:"Strength",    showarrow:false, font:{size:16, color:"#0D47A1"}},
+  {x:(xMed+x1)/2, y:(y0+yMed)*1.02, text:"Sustain",     showarrow:false, font:{size:16, color:"#3E2723"}},
+  {x:(x0+xMed)/2, y:(y0+yMed)*1.02, text:"Deprioritize",showarrow:false, font:{size:16, color:"#424242"}},
+];
+
+const layout = {
+  title: { text: "Current State × Transformative Potential — Principle 2×2", x:0.5, xanchor:"center", font:{ size: 22 } },
+  xaxis: { title: "Current State (Average)", range:[x0,x1], tickmode:"linear", dtick:0.5, showgrid:true, gridcolor:"rgba(0,0,0,0.08)" },
+  yaxis: { title: "Transformative Potential (Average)", range:[y0,y1], tickmode:"linear", dtick:0.5, showgrid:true, gridcolor:"rgba(0,0,0,0.08)" },
+  legend: { orientation:"h", yanchor:"top", y: -0.1, xanchor:"center", x:0.5, bgcolor:"rgba(255,255,255,0.9)", bordercolor:"rgba(0,0,0,0.1)", borderwidth:1, font:{ size: 12 } },
+  margin: { l:80, r:40, t:70, b:100 },
+  font: { family:"Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif", size: 14 },
+  hoverlabel: { bgcolor:"white", font:{ size: 14 } },
+  plot_bgcolor: "white",
+  shapes, annotations
+};
+
+Plotly.newPlot('chart', traces, layout, {displayModeBar: true, responsive: true});
+</script>
+</body>
+</html>
