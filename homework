@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Product Operating Model-- Homework Results (CH) 2×2</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <!-- Plotly (CDN) -->
+  <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <style>
+    body { margin:0; font-family: Arial, Helvetica, sans-serif; background:#fff; }
+    .wrap { max-width: 1280px; margin: 24px auto; padding: 0 16px; }
+    h1 { font-size: 24px; margin: 0 0 12px; text-align:center; }
+    .sub { text-align:center; color:#555; margin-bottom: 12px; }
+    #chart { width:100%; height: 820px; }
+    .legend-note { text-align:center; color:#666; font-size:14px; margin-top:8px; }
+    @media (max-width: 768px) {
+      #chart { height: 600px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Transformative Potential vs. Current State</h1>
+  <div class="sub">Hover a dot to see the full principle (e.g., <em>“2e. Innovation over predictability”</em>).</div>
+  <div id="chart"></div>
+  <div class="legend-note">Quadrants are split by median lines. Colors: Opportunity (green), Strength (blue), Sustain (brown), Deprioritize (gray).</div>
+</div>
+
+<script>
+(async function() {
+  // --- Replace this block with your actual aggregated data if needed ---
+  // This file expects the data to be embedded. If you regenerate from Python,
+  // paste the arrays below. For now, we'll fetch data embedded by the generator.
+
+  // Embedded data arrays (Examples – these are placeholders; replace with your generated arrays)
+  // names: full principle labels; shortLabels: short labels like "2e"; xVals: Current Fit avg; yVals: Transformative Potential avg; counts: response counts
+  const names = [
+    // e.g., "2e. Innovation over predictability",
+    // These will be injected by your Python export in a real scenario.
+  ];
+  const shortLabels = [
+    // e.g., "2e"
+  ];
+  const xVals = [
+    // e.g., 2.3, 3.7, ...
+  ];
+  const yVals = [
+    // e.g., 4.4, 3.2, ...
+  ];
+  const counts = [
+    // e.g., 6, 6, ...
+  ];
+
+  // If you used my Python generator, you can paste the following generated JSON right here:
+  // const dataFromPython = {...}; // then map into arrays above.
+
+  // If arrays are empty (because this is a template), show a friendly message
+  if (!names.length) {
+    const container = document.getElementById('chart');
+    container.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#444;text-align:center;padding:24px;">' +
+      '<div><div style="font-size:18px;margin-bottom:8px;">No data embedded yet</div>' +
+      '<div style="font-size:14px;">Paste your arrays into this HTML (names, shortLabels, xVals, yVals, counts) or regenerate this file from the Python script so it inlines your data.</div></div></div>';
+    return;
+  }
+
+  // Compute medians for quadrant lines
+  function median(arr) {
+    const a = arr.slice().sort((x,y)=>x-y);
+    const mid = Math.floor(a.length/2);
+    return a.length % 2 ? a[mid] : (a[mid-1]+a[mid])/2;
+  }
+  const xMed = median(xVals);
+  const yMed = median(yVals);
+
+  // Quadrant classification
+  const QUADS = {
+    OPP: "High Potential • Low Current (Opportunity)",
+    STR: "High Potential • High Current (Strength)",
+    SUS: "Low Potential • High Current (Sustain)",
+    DEP: "Low Potential • Low Current (Deprioritize)"
+  };
+  function classify(x, y) {
+    if (y >= yMed && x <  xMed) return QUADS.OPP;
+    if (y >= yMed && x >= xMed) return QUADS.STR;
+    if (y <  yMed && x >= xMed) return QUADS.SUS;
+    return QUADS.DEP;
+  }
+  const colors = {
+    [QUADS.OPP]: "#2E7D32",
+    [QUADS.STR]: "#1565C0",
+    [QUADS.SUS]: "#6D4C41",
+    [QUADS.DEP]: "#9E9E9E"
+  };
+
+  // Build traces per quadrant
+  const tracesByQuad = {};
+  names.forEach((label, i) => {
+    const q = classify(xVals[i], yVals[i]);
+    (tracesByQuad[q] ||= { x: [], y: [], text: [], customdata: [], marker: [], name: q });
+    tracesByQuad[q].x.push(xVals[i]);
+    tracesByQuad[q].y.push(yVals[i]);
+    tracesByQuad[q].text.push(shortLabels[i]);
+    tracesByQuad[q].customdata.push([label, counts[i]]);
+    tracesByQuad[q].marker.push(Math.max(10, Math.min(28, counts[i]*3)));
+  });
+
+  const traces = Object.keys(tracesByQuad).map(q => ({
+    type: "scatter",
+    mode: "markers+text",
+    x: tracesByQuad[q].x,
+    y: tracesByQuad[q].y,
+    text: tracesByQuad[q].text,
+    textposition: "top center",
+    textfont: { size: 12 },
+    marker: {
+      size: tracesByQuad[q].marker,
+      color: colors[q],
+      line: { width: 1, color: "white" },
+      opacity: 0.9
+    },
+    name: q,
+    customdata: tracesByQuad[q].customdata,
+    hovertemplate:
+      "<b>%{customdata[0]}</b><br>" +
+      "Current Fit Avg: %{x:.2f}<br>" +
+      "Transformative Potential Avg: %{y:.2f}<br>" +
+      "Responses: %{customdata[1]:.0f}<extra></extra>"
+  }));
+
+  // Chart bounds and padding
+  const xMin = Math.min(...xVals), xMax = Math.max(...xVals);
+  const yMin = Math.min(...yVals), yMax = Math.max(...yVals);
+  const xPad = (xMax - xMin) * 0.1 || 0.5;
+  const yPad = (yMax - yMin) * 0.1 || 0.5;
+  const x0 = Math.max(0, xMin - xPad), x1 = Math.min(5, xMax + xPad);
+  const y0 = Math.max(0, yMin - yPad), y1 = Math.min(5, yMax + yPad);
+
+  const shapes = [
+    // Quadrant backgrounds
+    { type: "rect", x0: x0,   y0: yMed, x1: xMed, y1: y1, fillcolor: "#C8E6C9", opacity: 0.45, line: { width: 0 } },
+    { type: "rect", x0: xMed, y0: yMed, x1: x1,   y1: y1, fillcolor: "#BBDEFB", opacity: 0.35, line: { width: 0 } },
+    { type: "rect", x0: xMed, y0: y0,   x1: x1,   y1: yMed, fillcolor: "#D7CCC8", opacity: 0.28, line: { width: 0 } },
+    { type: "rect", x0: x0,   y0: y0,   x1: xMed, y1: yMed, fillcolor: "#EEEEEE", opacity: 0.50, line: { width: 0 } },
+    // Median lines
+    { type: "line", x0: x0, x1: x1, y0: yMed, y1: yMed, line: { width: 2, dash: "dash", color: "#455A64" } },
+    { type: "line", x0: xMed, x1: xMed, y0: y0, y1: y1, line: { width: 2, dash: "dash", color: "#455A64" } },
+  ];
+
+  const annotations = [
+    { x: (x0 + xMed)/2, y: (yMed + y1)*0.97, text: "Opportunity",  showarrow:false, font:{size:16, color:"#1B5E20"} },
+    { x: (xMed + x1)/2, y: (yMed + y1)*0.97, text: "Strength",     showarrow:false, font:{size:16, color:"#0D47A1"} },
+    { x: (xMed + x1)/2, y: (y0 + yMed)*1.03, text: "Sustain",       showarrow:false, font:{size:16, color:"#3E2723"} },
+    { x: (x0 + xMed)/2, y: (y0 + yMed)*1.03, text: "Deprioritize",  showarrow:false, font:{size:16, color:"#424242"} },
+  ];
+
+  const layout = {
+    title: { text: "Transformative Potential vs. Current Fit — Principle-Level 2×2 (Styled)", x: 0.5, xanchor: "center", font: { size: 24 } },
+    xaxis: { title: "Current Fit (Average)", range: [x0, x1], tickmode: "linear", dtick: 0.5, showgrid: true, gridcolor: "rgba(0,0,0,0.08)" },
+    yaxis: { title: "Transformative Potential (Average)", range: [y0, y1], tickmode: "linear", dtick: 0.5, showgrid: true, gridcolor: "rgba(0,0,0,0.08)" },
+    legend: { orientation: "h", yanchor: "bottom", y: 1.02, xanchor: "center", x: 0.5, bgcolor: "rgba(255,255,255,0.7)", bordercolor: "rgba(0,0,0,0.1)", borderwidth: 1, font: { size: 14 } },
+    font: { family: "Arial, Helvetica, sans-serif", size: 16 },
+    hoverlabel: { bgcolor: "white", font: { size: 16, family: "Arial" } },
+    width: 1200, height: 820, margin: { l: 80, r: 60, t: 90, b: 80 }, plot_bgcolor: "white",
+    shapes, annotations
+  };
+
+  Plotly.newPlot('chart', traces, layout, {displayModeBar: true, responsive: true});
+})();
+</script>
+</body>
+</html>
