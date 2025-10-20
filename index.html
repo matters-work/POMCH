@@ -100,15 +100,10 @@ const shapes = [
   {type:"line", x0:x0,  x1:x1,  y0:yMed, y1:yMed, line:{width:2, dash:"dash", color:"#455A64"}},
 ];
 
-const annotations = [
-  {x:(x0+xMed)/2, y:(yMed+y1)*0.98, text:"Opportunity",  showarrow:false, font:{size:16, color:"#1B5E20"}},
-  {x:(xMed+x1)/2, y:(yMed+y1)*0.98, text:"Strength",    showarrow:false, font:{size:16, color:"#0D47A1"}},
-  {x:(xMed+x1)/2, y:(y0+yMed)*1.02, text:"Sustain",     showarrow:false, font:{size:16, color:"#3E2723"}},
-  {x:(x0+xMed)/2, y:(y0+yMed)*1.02, text:"Deprioritize",showarrow:false, font:{size:16, color:"#424242"}},
-];
+
 
 const layout = {
-  title: { text: "Current State × Transformative Potential — Principle 2×2", x:0.5, xanchor:"center", font:{ size: 22 } },
+  title: { text: "Current State × Transformative Potential", x:0.5, xanchor:"center", font:{ size: 22 } },
   xaxis: { title: "Current State (Average)", range:[x0,x1], tickmode:"linear", dtick:0.5, showgrid:true, gridcolor:"rgba(0,0,0,0.08)" },
   yaxis: { title: "Transformative Potential (Average)", range:[y0,y1], tickmode:"linear", dtick:0.5, showgrid:true, gridcolor:"rgba(0,0,0,0.08)" },
   legend: { orientation:"h", yanchor:"top", y: -0.1, xanchor:"center", x:0.5, bgcolor:"rgba(255,255,255,0.9)", bordercolor:"rgba(0,0,0,0.1)", borderwidth:1, font:{ size: 12 } },
