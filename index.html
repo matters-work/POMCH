@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <title>Current State  Transformative Potential — Product Operating Model (Oct 2025)</title>
+  <title>Current State × Transformative Potential — Product Operating Model (Oct 2025)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
   <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
@@ -23,7 +23,7 @@
   <div class="sub">Hover shows true averages. X = Current State, Y = Transformative Potential. Scale locked to 1–5.</div>
 </div>
 <div id="chart" role="img" aria-label="2×2 scatter showing each principle's current state vs. transformative potential"></div>
-
+<div class="legend-note">Quadrants split by medians. Colors: Opportunity (green), Strength (blue), Sustain (brown), Deprioritize (gray).</div>
 
 <script>
 
@@ -42,10 +42,10 @@ const xMed = median(xTrue);   // Current State median (true)
 const yMed = median(yTrue);   // Transformative Potential median (true)
 
 const QUADS = {
-  OPP: "High Potential • Low Current (Opportunity)",
-  STR: "High Potential • High Current (Strength)",
-  SUS: "Low Potential • High Current (Sustain)",
-  DEP: "Low Potential • Low Current (Deprioritize)"
+  OPP: "",
+  STR: "",
+  SUS: "",
+  DEP: ""
 };
 function classify(x,y){ 
   if (y>=yMed && x<xMed) return QUADS.OPP;
@@ -100,7 +100,12 @@ const shapes = [
   {type:"line", x0:x0,  x1:x1,  y0:yMed, y1:yMed, line:{width:2, dash:"dash", color:"#455A64"}},
 ];
 
-
+const annotations = [
+  {x:(x0+xMed)/2, y:(yMed+y1)*0.98, text:"",  showarrow:false, font:{size:16, color:"#1B5E20"}},
+  {x:(xMed+x1)/2, y:(yMed+y1)*0.98, text:"",    showarrow:false, font:{size:16, color:"#0D47A1"}},
+  {x:(xMed+x1)/2, y:(y0+yMed)*1.02, text:"",     showarrow:false, font:{size:16, color:"#3E2723"}},
+  {x:(x0+xMed)/2, y:(y0+yMed)*1.02, text:"",showarrow:false, font:{size:16, color:"#424242"}},
+];
 
 const layout = {
   title: { text: "Current State × Transformative Potential", x:0.5, xanchor:"center", font:{ size: 22 } },
